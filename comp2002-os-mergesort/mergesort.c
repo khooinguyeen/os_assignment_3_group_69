@@ -48,6 +48,11 @@ void * parallel_mergesort(void *arg){
 	int right = a->right;
 	int level = a->level;
 
+	if (left >= right) {
+		free(arg);
+		return NULL; 
+	}
+
 	if (level >= cutoff) {
 		my_mergesort(left, right);
 		free(arg);
