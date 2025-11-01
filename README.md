@@ -164,7 +164,7 @@ Moreover, we discovered an additional complexity: the test program (test-mergeso
 
 ### Pthread API Requirements:
 Understanding why parallel_mergesort() must have the signature void * function(void *arg) took some research. We learned this is mandated by pthread_create() and requires casting to use our custom struct. 
-And for void * function, we have to return a NULL pointer. A first, we thought this is similar to normal void function that does not need returning.
+And for void * function, we have to return a NULL pointer. At first, we thought this is similar to normal void function that does not need returning.
 
 ### Base Case Handling:
 Determining when to stop creating threads required careful consideration. We implemented the check if (left >= right) before the cutoff check to handle edge cases where the cutoff is larger than necessary, preventing infinite thread creation.
