@@ -88,9 +88,60 @@ Performance test with large array:
 
 ## Testing
 
-This section should detail how you tested your code. Simply stating "I ran
-it a few times and it seems to work" is not sufficient. Your testing needs
-to be detailed here.
+We automate our testing scenarios through a Bash script `auto_test.sh`, which generates a folder `auto_test_outputs` on each scenario run and saves the result of each scenario in a seperated csv file such as `integration_results.csv` or a text file `performance_summary.txt` for recording speed up result after multithreading. Raw logs of each test run is also available on the console.  
+
+The test script `auto_test.sh` can be run by following these steps: 
+- Clean all previously compiled file: `make clean`.
+- Recompile all .c files: `make all`. 
+- Run all test scenarios with `./auto_tests.sh all`. 
+- Individual scenarios can be run following this command `./auto_tests.sh <add-scenario>` (E.g: `./auto_tests.sh integration`).
+
+We decide to test four different scenarios for our parallel merge sort implementation, with every invocation exited with status 0 and `check_if_sorted` confirmed sorted arrays, yielding full PASS rows in .csv files.
+
+### 1. Integration testing 
+We wanted to test if all four functions in mergesort.c worked together perfectly by using two test cases: 
+
+Command: `./auto_tests.sh integration`
+
+- A fixed small array case (`n=5000`, `cutoff=0`, `seed=1234`)
+- Randomise n in the 10 000–20 000 element range with a random cutoff (1, 3) and a random seed. 
+
+Both executions completed without errors, verifying that argument parsing, single-threaded merge sort recursion and thread teardown succeed in a normal command line run. Results are recorded in `auto_test_outputs/integration_results.csv`.
+
+### 2. Correctness testing 
+We wanted to verify that the merge sort algorithm correctly sorted randomised arrays under different cases:
+
+Command: `./auto_tests.sh correctness` 
+
+- Combinations of different array sizes, seeds and cutoffs: 
+  - Random small and medium array sizes (10 up to 10 000 000)
+  - Different cutoffs (1-3) and seeds (69, 1234, 99999). 
+- Edge cases:
+  - Minimum array size of 2, with cutoff value 0,1. 
+  - Cutoff of value 0: serial merge sort
+  - Special arrays: sorted, descending order and an array of equal value.
+
+All cases were run perfectly under various input parameters with `PASS`, and our code proved to be able to handle edge cases without breaking. Results are recorded in `auto_test_outputs/correctness_results.csv`.
+
+### 3. Performance testing 
+As correctness was not an issue, we expanded our test scenarios to involves huge arrays with a variety of cutoff, measuring the performance difference between serial merge sort and parallel merge sort:
+Command: `./auto_tests.sh performance`
+
+- Using fixed-size array of 100 000 000 random numbers.
+- Interate cutoff value from 0 to 10. 
+
+On our lab machine the serial baseline was ~13.4 s; every parallel run from cutoff ≥ 3 achieved a measured speedup above the 2× requirement (sometimes it was achieved with cutoff >= 2). Detailed timings are in `auto_test_outputs/performance_results.csv` with an easy-to-read summary in `auto_test_outputs/performance_summary.txt`.
+
+### 4. Stress testing  
+We also want to stress test the parallel merge sort with high cutoff value and large arrays to analyse how the algorithm behaves under continuous high volumn tests. 
+Command: `./auto_tests.sh stress`
+
+- Stress test: large array size of 100 000 000 across cutoffs 8-14 with seed 676. 
+- Stable test: same array size under repeated runs at cutoff 8 with seeds from 2023 to 2026. 
+
+All high-load runs completed and logged PASS entries to `auto_test_outputs/stress_results.csv`, providing confidence that deep recursion and repeated thread creation remain stable.
+
+**P/s**: After each scenario we spot-checked the emitted CSV files and the console logs to ensure no FAIL rows appeared and that timing data remained numeric. Together these tests cover functional correctness, edge modes, performance objectives, and long-running stress scenarios.
 
 ## Known Bugs
 
@@ -100,16 +151,6 @@ Currently, there are no known bugs or errors in the code. The implementation han
 
 
 ## Reflection and Self Assessment
-
-Discuss the issues you encountered during development and testing. What
-problems did you have? What did you have to research and learn on your own?
-What kinds of errors did you get? How did you fix them?
-
-What parts of the project did you find challenging? Is there anything that
-finally "clicked" for you in the process of working on this project? How well
-did the development and testing process go for you?
-
-
 ### Understanding Thread Ownership and Memory Management: 
 This was the most significant challenge. Initially, we thought we had to free left_arg and right_arg after creating child threads. However, this was fundamentally wrong because:
  - If we freed them before pthread_join(), the child threads would access freed memory (use-after-free bug)
@@ -126,8 +167,16 @@ Understanding why parallel_mergesort() must have the signature void * function(v
 And for void * function, we have to return a NULL pointer. A first, we thought this is similar to normal void function that does not need returning.
 
 ### Base Case Handling:
-Determining when to stop creating threads required careful consideration. We implemented the check if (left >= right) before the cutoff check to handle edge cases where the cutoff is larger than necessary, preventing infinite thread creation
+Determining when to stop creating threads required careful consideration. We implemented the check if (left >= right) before the cutoff check to handle edge cases where the cutoff is larger than necessary, preventing infinite thread creation.
 
+### Resource Limits:
+While investigating how the algorithm behaves under extream conditions, we tried to test the program with n over 100 000 000 and pushing cutoff over 14. These resulted in multiple system failures, especially in thread creation. This was expected as parallel merge sort an enourmous array size like 100 000 000 result in large number of spawn threads, which overstrained our local machines. Same issue with high cutoff value like 15 allowed 2^16 - 1 threads to flow during execution, causing flaky behavior and most of the time thread creation failure. 
+
+### Performance Plateau:
+We tried to analyse if higher number of threads equal to faster speed, which was proved to not be the case when cutoff value went beyond 10. Performance started to improved very slowly after cutoff value hitting 5, and basically freezed after hiting 8. No improvements are seen after these, and interestingly, the performance got worse once the cutoff value passed 10. We came to the conclusion that too many threads can cause hugh overhead, and only a fixed amount of threads can run at the same time. In simple term, it was the huge delay queue of threads that slows down the system. 
+
+### Conclusion
+Overall, our team learened a lot on how to apply multithreading into improving performance of a suitable algorithm, such as merge sort. The process of debugging our implementation strengthen our understanding of controlling thread resources, preventing memory leaks or double free issue. At the same time, writing test cases forced us to think of potential cases that our code could go wrong, but also gave us confident that our code could run under multiple conditions, while knowing the existing constraint that came with limited hardware resources on our local machines. 
 
 ## Sources Used
 
