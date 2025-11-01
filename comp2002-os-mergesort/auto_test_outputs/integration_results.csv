@@ -1,3 +1,0 @@
-TestType,InputSize,Cutoff,Seed,Mode,Time,Status
-integration-fixed,5000,0,1234,,0.00,PASS
-integration-random,16884,2,12230,,0.00,PASS
