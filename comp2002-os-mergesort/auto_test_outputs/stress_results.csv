@@ -1,0 +1,12 @@
+TestType,InputSize,Cutoff,Seed,Mode,Time,Status
+stress,100000000,8,676,,1.50,PASS
+stress,100000000,9,676,,1.50,PASS
+stress,100000000,10,676,,1.53,PASS
+stress,100000000,11,676,,1.60,PASS
+stress,100000000,12,676,,1.65,PASS
+stress,100000000,13,676,,1.88,PASS
+stress,100000000,14,676,,2.32,PASS
+stress-repeat,100000000,8,2023,,1.53,PASS
+stress-repeat,100000000,8,2024,,1.54,PASS
+stress-repeat,100000000,8,2025,,1.54,PASS
+stress-repeat,100000000,8,2026,,1.53,PASS

@@ -1,0 +1,11 @@
+cutoff=0 runtime=13.43 (baseline)
+cutoff=1 runtime=9.72 speedup=1.38
+cutoff=2 runtime=3.76 speedup=3.57
+cutoff=3 runtime=2.31 speedup=5.81
+cutoff=4 runtime=1.67 speedup=8.04
+cutoff=5 runtime=1.50 speedup=8.95
+cutoff=6 runtime=1.56 speedup=8.61
+cutoff=7 runtime=1.48 speedup=9.07
+cutoff=8 runtime=1.51 speedup=8.89
+cutoff=9 runtime=3.94 speedup=3.41
+cutoff=10 runtime=1.53 speedup=8.78
