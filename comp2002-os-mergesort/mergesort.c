@@ -49,13 +49,13 @@ void * parallel_mergesort(void *arg){
 	int level = a->level;
 
 	if (left >= right) {
-		free(arg);
+		if (level > 0) free(arg);
 		return NULL; 
 	}
 
 	if (level >= cutoff) {
 		my_mergesort(left, right);
-		free(arg);
+		if (level > 0) free(arg);
 		return NULL;
 	}
 
@@ -63,22 +63,67 @@ void * parallel_mergesort(void *arg){
 	struct argument *left_arg = buildArgs(left, mid, level + 1);
 	struct argument *right_arg = buildArgs(mid + 1, right, level + 1);
 
+	if (left_arg == NULL || right_arg == NULL) {
+		free(left_arg);
+		free(right_arg);
+		my_mergesort(left, right);
+		if (level > 0) free(arg);
+		return NULL;
+	}
+
 	pthread_t thread_left, thread_right;
-	pthread_create(&thread_left, NULL, parallel_mergesort, left_arg);
-	pthread_create(&thread_right, NULL, parallel_mergesort, right_arg);
+	int left_flag = 0, right_flag = 0;
+	left_flag = pthread_create(&thread_left, NULL, parallel_mergesort, left_arg);
+
+	if (left_flag != 0) {
+		perror("Fail to create left thread");
+		fprintf(stderr, "Error: fail to create left thread with left %d, right %d, level %d!\n", left, mid, level+1);
+		free(left_arg);
+		free(right_arg);
+		my_mergesort(left, right);
+
+		if (level > 0) free(arg);
+		return NULL;
+	}
+
+	right_flag = pthread_create(&thread_right, NULL, parallel_mergesort, right_arg);
+
+	if (right_flag != 0) {
+		perror("Fail to create right thread");
+		fprintf(stderr, "Error: fail to create right thread with left %d, right %d, level %d!\n", mid+1, right, level+1);
+		free(right_arg);
+
+		pthread_join(thread_left, NULL);
+
+		my_mergesort(mid+1, right);
+
+		merge(left, mid, mid+1, right);
+
+		if (level > 0) free(arg);
+		return NULL;
+	}
+
 
 	pthread_join(thread_left, NULL);
 	pthread_join(thread_right, NULL);
 
 	merge(left, mid, mid + 1, right);
 
-	free(arg);
+	if (level > 0) free(arg);
 	return NULL;
 }
 
 /* we build the argument for the parallel_mergesort function. */
 struct argument * buildArgs(int left, int right, int level){
 	struct argument * arg = malloc(sizeof(struct argument));
+
+	/* check malloc safety, mark fail if can not generate arg */
+	if (arg == NULL) {
+		perror("Fail to allocate argument");
+		fprintf(stderr, "Error: malloc for arg with left %d, right %d, level %d failed!\n", left, right, level);
+		return NULL;
+	}
+
 	arg->left = left;
 	arg->right = right;
 	arg->level = level;
