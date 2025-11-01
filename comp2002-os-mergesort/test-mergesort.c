@@ -86,7 +86,6 @@ void generate_random_array(int A[], int n, int seed)
         	A[i] = random()%RANGE;
 }
 
-
 /*
  * check_if_sorted(int A[], int n):
  *
@@ -127,10 +126,34 @@ void printB(void){
 	printf("\n");
 }
 
+void fill_sorted_array(int A[], int n)
+{
+	int i;
+	for (i = 0; i < n; i++) {
+		A[i] = i;
+	}
+}
+
+void fill_descending_array(int A[], int n)
+{
+	int i;
+	for (i = 0; i < n; i++) {
+		A[i] = n - 1 - i;
+	}
+}
+
+void fill_equal_array(int A[], int n, int value)
+{
+	int i;
+	for (i = 0; i < n; i++) {
+		A[i] = value;
+	}
+}
+
 int main(int argc, char **argv) {
 
 	if (argc < 4) { // there must be at least one command-line argument
-			fprintf(stderr, "Usage: %s <input size> <cutoff level> <seed> \n", argv[0]);
+			fprintf(stderr, "Usage: %s <input size> <cutoff level> <seed> [mode]\n", argv[0]);
 			exit(1);
 	}
 
@@ -141,12 +164,27 @@ int main(int argc, char **argv) {
 	}
 	cutoff = atoi(argv[2]);
 	int seed = atoi(argv[3]);
+	const char *mode = (argc >= 5) ? argv[4] : NULL;
 
 	A = (int *) malloc(sizeof(int) * n);
 	B = (int *) malloc(sizeof(int) * n);
 
 	// generate random input
 	generate_random_array(A, n, seed);
+
+	// add 4th argument "Mode" to test 
+	if (mode != NULL) {
+		if (strcmp(mode, "sorted") == 0) {
+			fill_sorted_array(A, n);
+		} else if (strcmp(mode, "descending") == 0) {
+			fill_descending_array(A, n);
+		} else if (strcmp(mode, "equal") == 0) {
+			int value = seed % RANGE;
+			fill_equal_array(A, n, value);
+		} else {
+			fprintf(stderr, "Warning: unknown mode mode '%s'. Using random data.\n", mode);
+		}
+	}
 
 	double start_time;
 	double sorting_time;

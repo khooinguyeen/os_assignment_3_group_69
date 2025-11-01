@@ -1,0 +1,12 @@
+TestType,InputSize,Cutoff,Seed,Mode,Time,Status
+performance,100000000,0,9999,,16.21,PASS
+performance,100000000,1,9999,,6.75,PASS
+performance,100000000,2,9999,,3.65,PASS
+performance,100000000,3,9999,,2.40,PASS
+performance,100000000,4,9999,,1.90,PASS
+performance,100000000,5,9999,,1.74,PASS
+performance,100000000,6,9999,,1.78,PASS
+performance,100000000,7,9999,,3.85,PASS
+performance,100000000,8,9999,,1.50,PASS
+performance,100000000,9,9999,,1.49,PASS
+performance,100000000,10,9999,,1.57,PASS

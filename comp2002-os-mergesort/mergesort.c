@@ -82,10 +82,6 @@ void * parallel_mergesort(void *arg){
 	// exit if fail to create
 	if (left_flag != 0) {
 		fprintf(stderr, "Error: fail to create left thread with left %d, right %d, level %d!\n", left, mid, level+1);
-		// free unused arguments
-		free(left_arg);
-		free(right_arg);
-		if (level > 0) free(arg);
 		exit(EXIT_FAILURE);
 	}
 
@@ -94,12 +90,6 @@ void * parallel_mergesort(void *arg){
 	// exit if fail to create
 	if (right_flag != 0) {
 		fprintf(stderr, "Error: fail to create right thread with left %d, right %d, level %d!\n", mid+1, right, level+1);
-		// wait for left thread to join 
-		pthread_join(thread_left, NULL);
-		// free unused right argument
-		free(right_arg);
-		// free this thread argument 
-		if (level > 0) free(arg);
 		exit(EXIT_FAILURE);
 	}
 
